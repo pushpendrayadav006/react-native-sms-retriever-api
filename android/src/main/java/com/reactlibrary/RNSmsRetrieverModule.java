@@ -19,6 +19,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
+import android.os.Build;
 
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -183,10 +184,18 @@ public class RNSmsRetrieverModule extends ReactContextBaseJavaModule implements 
 	private void registerReceiverIfNecessary(BroadcastReceiver receiver) {
 		if (getCurrentActivity() == null) return;
 		try {
-			getCurrentActivity().registerReceiver(
+			if (Build.VERSION.SDK_INT >= 34) {
+				getCurrentActivity().registerReceiver(
+					receiver,
+					new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+					Context.RECEIVER_EXPORTED
+				);
+			} else {
+				getCurrentActivity().registerReceiver(
 					receiver,
 					new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-			);
+				);
+			}
 			Log.d(TAG, "Receiver Registered");
 			isReceiverRegistered = true;
 		} catch (Exception e) {
